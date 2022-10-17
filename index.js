@@ -1,4 +1,4 @@
-function imprimirRecibo(id1,id2,id3,id4,id5,id6,id7,id8,id9,id10,id11,id12,id13,id14,id15,id16){
+function imprimirRecibo(id1,id2,id3,id4,id5,id6,id7,id8,id9,id10,id11,id12,id13,id14,id15,id16,id17){
 	document.querySelector('#reciboNombre').innerHTML=id1;
 	document.querySelector('#reciboIngreso').innerHTML=id2;
 	document.querySelector('#reciboSalarioBasico').innerHTML=id3.toFixed(2);
@@ -13,8 +13,9 @@ function imprimirRecibo(id1,id2,id3,id4,id5,id6,id7,id8,id9,id10,id11,id12,id13,
 	document.querySelector('#reciboSalarioBruto').innerHTML=id12.toFixed(2);
 	document.querySelector('#reciboRetenciones').innerHTML=id13.toFixed(2);
 	document.querySelector('#reciboSalarioNeto').innerHTML=id14.toFixed(2);
-	document.querySelector('#reciboVacaciones').innerHTML=id15.toFixed(2);
-	document.querySelector('#reciboAguinaldo').innerHTML=id16.toFixed(2);
+	document.querySelector('#reciboDiasVacaciones').innerHTML=id15;
+	document.querySelector('#reciboSalarioVacaciones').innerHTML=id16.toFixed(2);
+	document.querySelector('#reciboAguinaldo').innerHTML=id17.toFixed(2);
 	document.querySelector('#recibo').classList.remove("d-none");
 }
 
@@ -87,18 +88,19 @@ function calcularSalario(){
 	salarioNeto =+ salarioBruto - retenciones;
 	
 	// Me falta aun completar esta parte para la antiguedad y las vacaciones
-	console.log(ingreso)
-	const calcularAntiguedad = (ingreso) =>{
+	
+	let fechaIngreso = new Date(ingreso)
+	const calcularAntiguedad1 = (ingreso) =>{
 		const fechaActual = new Date();
 		const anioActual = parseInt(fechaActual.getFullYear());
 		const mesActual = parseInt(fechaActual.getMonth()) + 1;
 		const diaActual = parseInt(fechaActual.getDate());
 		
-		const anioIngreso = parseInt(String(ingreso).substring(0, 4));
-		const mesIngreso = parseInt(String(ingreso).substring(5, 7));
-		const diaIngreso = parseInt(String(ingreso).substring(8, 10));
+		const anioIngreso = parseInt(ingreso.getFullYear());
+		const mesIngreso = parseInt(ingreso.getMonth() + 1);
+		const diaIngreso = parseInt(ingreso.getDate());
 
-		let antiguedad = anioActual - anioIngreso
+		let anioAntiguedad = anioActual - anioIngreso
 		if (mesActual < mesIngreso) {
 			antiguedad--;
 		}
@@ -107,12 +109,47 @@ function calcularSalario(){
 				antiguedad--;
 			}
 		}
-		return antiguedad;
+		return anioAntiguedad;
 	};
+	const calcularAntiguedad2 = (ingreso) =>{
+		const fechaActual = new Date();
+		const mesActual = parseInt(fechaActual.getMonth()) + 1;
+		const diaActual = parseInt(fechaActual.getDate());
+		
+		const mesIngreso = parseInt(ingreso.getMonth() + 1);
+		const diaIngreso = parseInt(ingreso.getDate());
+
+		let mesAntiguedad = mesActual - mesIngreso
+		if (diaActual < diaIngreso){
+			mesAntiguedad--;
+		}
+		return mesAntiguedad;
+	};
+
+	let diasVacaciones = 0;
+	if (calcularAntiguedad1(fechaIngreso) >= 20) {
+		diasVacaciones =+ 35
+	}
+	else if (calcularAntiguedad1(fechaIngreso) >= 10 && calcularAntiguedad1(fechaIngreso) < 20){
+		diasVacaciones =+ 28
+	}
+	else if (calcularAntiguedad1(fechaIngreso) >= 5 && calcularAntiguedad1(fechaIngreso) < 10){
+		diasVacaciones =+ 21
+	}
+	else if (calcularAntiguedad1(fechaIngreso) < 5){
+		if (calcularAntiguedad1(fechaIngreso) == 0 && calcularAntiguedad2(fechaIngreso) < 6){
+			diasVacaciones =+ calcularAntiguedad2(fechaIngreso)
+		}
+		else {
+			diasVacaciones =+ 14
+		}
+	}
 	
-	let vacaciones = 0;
+	let salarioVacaciones = 0;
+	salarioVacaciones =+ salarioBasico / 22 * 1.10 * 1.25 * diasVacaciones;
 
 	let aguinaldo = 0;
+	aguinaldo =+ salarioBruto / 2
 	//Hasta aca seria lo que falta
 
 	imprimirRecibo(
@@ -130,7 +167,8 @@ function calcularSalario(){
 		salarioBruto,
 		retenciones,
 		salarioNeto,
-		vacaciones,
+		diasVacaciones,
+		salarioVacaciones,
 		aguinaldo
 	);
 }
